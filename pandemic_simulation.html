@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="jquery-3.4.1.min.js"></script>
+    <title>Pandemic Simulation</title>
+</head>
+
+<body onload="init()">
+    <canvas id="canvas" width="500" height="500" style="border:1px solid #000;width:500px;height:500px;float:left;"></canvas>
+    <div style="border:1px solid #000;background:#eee;padding:10px">
+        <label>Population Density per pixel<br/><input id="density" type="number" value="0.01"/></label><br/>
+        <label>Initial Infection Size<br/><input id="init_inf" type="number" value="3"/></label><br/>
+        <button id="restart">Restart</button><br/>
+    </div>
+    <label>Infection Radius<br/><input id="inf_r" type="number" value="5"/></label><br/>
+    <label>Immunity Chance<br/><input id="immune_chance" type="number" value="0.01"/></label><br/>
+    <label>Death Chance<br/><input id="death_chance" type="number" value="0.001"/></label><br/>
+    <label>Chance of Travel<br/><input id="chance_of_travel" type="number" value="0.00001"/></label><br/>
+    <label>Playback Pause<br/><input id="playback_ms" type="number" value="1000"/></label><br/>
+    <div id="stats"></div>
+    <script>
+        var pop_density, sW, sH, pop_arr, init_inf;
+        var colours = ['#0f0', '#f00', '#fff', '#00f'];
+
+        function init() {
+            pop_density = +$('#density').val();
+            sW = +$('#canvas')[0].offsetWidth - 5;
+            sH = +$('#canvas')[0].offsetHeight - 5;
+            init_inf = +$('#init_inf').val();
+            pop_arr = [];
+            // { set up population
+            var pop = pop_density * sW * sH;
+            for (var i = 0; i < pop; ++i) {
+                var p = {
+                    x: Math.random() * sW,
+                    y: Math.random() * sH,
+                    state: 0,
+                };
+                pop_arr.push(p);
+                if (i < init_inf) {
+                    p.state = 1;
+                }
+            }
+            // }
+            runMovements();
+        }
+
+        function runMovements() {
+            pop_arr.forEach((p, idx) => {
+                if (p.state == 3) {
+                    return;
+                }
+                var chance_of_travel = +$('#chance_of_travel').val();
+                var dist = Math.random() < chance_of_travel ? 300 : 1;
+                p.x += (0.5 - Math.random()) * 2 * dist;
+                p.y += (0.5 - Math.random()) * 2 * dist;
+                if (p.x < 0) p.x *= -1;
+                if (p.y < 0) p.y *= -1;
+                if (p.x >= sW) p.x = sW - (p.x - sW);
+                if (p.y >= sH) p.y = sH - (p.y - sH);
+                pop_arr[idx] = p;
+            });
+            runInfection();
+        }
+
+        function runInfection() {
+            var list_to_infect = [];
+            var inf_r = +$('#inf_r').val();
+            pop_arr.forEach((p, idx) => {
+                if (p.state != 1) {
+                    return;
+                }
+                pop_arr.forEach((q, qidx) => {
+                    if (q.state > 0) {
+                        return;
+                    }
+                    var d = Math.sqrt(
+                        Math.pow(q.x - p.x, 2) +
+                        Math.pow(q.y - p.y, 2)
+                    );
+                    if (d < inf_r) {
+                        list_to_infect.push(qidx);
+                    }
+                });
+            });
+            list_to_infect.forEach(pidx => {
+                pop_arr[pidx].state = 1;
+            });
+            runImmunity();
+        }
+
+        function runImmunity() {
+            var chance = +$('#immune_chance').val();
+            pop_arr.forEach((p, idx) => {
+                if (p.state == 1) {
+                    if (Math.random() < chance) {
+                        p.state = 2;
+                        pop_arr[idx] = p;
+                    }
+                }
+            });
+            runDeaths();
+        }
+
+        function runDeaths() {
+            var chance = +$('#death_chance').val();
+            pop_arr.forEach((p, idx) => {
+                if (p.state == 1) {
+                    if (Math.random() < chance) {
+                        p.state = 3;
+                        pop_arr[idx] = p;
+                    }
+                }
+            });
+            showPopulation();
+        }
+
+        function showPopulation() {
+            var $canvas = $('#canvas'),
+                ctx = $canvas[0].getContext('2d');
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, sW + 4, sH + 4);
+            var popStats = {
+                uninfected: 0,
+                infected: 0,
+                immune: 0,
+                dead: 0,
+            };
+            pop_arr.forEach(p => { // draw person
+                if (p.state == 0) {
+                    popStats.uninfected++;
+                }
+                if (p.state == 1) {
+                    popStats.infected++;
+                }
+                if (p.state == 2) {
+                    popStats.immune++;
+                }
+                if (p.state == 3) {
+                    popStats.dead++;
+                }
+                ctx.fillStyle = colours[p.state];
+                ctx.fillRect(p.x, p.y, 4, 4);
+            });
+            $('#stats').html(
+                'uninfected: ' + popStats.uninfected +
+                '<br/>infected: ' + popStats.infected +
+                '<br/>immune: ' + popStats.immune +
+                '<br/>dead: ' + popStats.dead
+            );
+            window.theRun = setTimeout(runMovements, +$('#playback_ms').val());
+        }
+        $('#restart').click(() => {
+            clearTimeout(window.theRun);
+            init();
+        });
+    </script>
+</body>
+
+</html>
