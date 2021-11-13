@@ -28,10 +28,11 @@
     <label>Death Chance<br/><input id="death_chance" type="number" value="0.001"/></label><br/>
     <label>Chance of Travel<br/><input id="chance_of_travel" type="number" value="0.0001"/></label><br/>
     <label>Playback Pause<br/><input id="playback_ms" type="number" value="50"/></label><br/>
-    <div id="stats"></div>
+    <div id="stats" style="padding-top: 30px;"></div>
     <script>
         var pop_density, sW, sH, pop_arr, init_inf;
         var colours = ['yellow', 'red', '#79FE0C', '#D3D3D3'];
+        var hour = 0;
 
         function init() {
             pop_density = +$('#density').val();
@@ -39,6 +40,7 @@
             sH = +$('#canvas')[0].offsetHeight - 5;
             init_inf = +$('#init_inf').val();
             pop_arr = [];
+
 
             // { set up population
             var pop = pop_density * sW * sH;
@@ -128,6 +130,7 @@
         }
 
         function showPopulation() {
+            hour++;
             var $canvas = $('#canvas'),
                 ctx = $canvas[0].getContext('2d');
             ctx.fillStyle = '#000';
@@ -155,7 +158,8 @@
                 ctx.fillRect(p.x, p.y, 4, 4);
             });
             $('#stats').html(
-                '<span style="color:yellow">Uninfected: ' + popStats.uninfected +
+                '<span style="color:white">Hour: ' + hour +
+                '</span><span style="color:yellow"><br/>Uninfected: ' + popStats.uninfected +
                 '</span><span style="color:red"><br/>Infected: ' + popStats.infected +
                 '</span><span style="color:#79FE0C"><br/>Immune: ' + popStats.immune +
                 '</span><span style="color:#D3D3D3"><br/>Dead: ' + popStats.dead +
