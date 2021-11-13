@@ -163,12 +163,14 @@
                 '</span><span style="color:red"><br/>Infected: ' + popStats.infected +
                 '</span><span style="color:#79FE0C"><br/>Immune: ' + popStats.immune +
                 '</span><span style="color:#D3D3D3"><br/>Dead: ' + popStats.dead +
+                '</span><span style="color:aqua"><br/>Alive: ' + (pop_arr.length - popStats.dead) +
                 '</span>'
             );
             window.theRun = setTimeout(runMovements, +$('#playback_ms').val());
         }
         $('#restart').click(() => {
             clearTimeout(window.theRun);
+            hour = 0;
             init();
         });
     </script>
