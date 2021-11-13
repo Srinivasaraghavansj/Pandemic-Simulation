@@ -4,24 +4,34 @@
 <head>
     <script src="jquery-3.4.1.min.js"></script>
     <title>Pandemic Simulation</title>
+    <style>
+        input {
+            background-color: gray;
+        }
+        
+        label {
+            color: aqua;
+        }
+    </style>
 </head>
 
-<body onload="init()">
-    <canvas id="canvas" width="500" height="500" style="border:1px solid #000;width:500px;height:500px;float:left;"></canvas>
-    <div style="border:1px solid #000;background:#eee;padding:10px">
+<body onload="init()" style="background-color: #616161;">
+    <div style="padding:20px;float:left;">
+        <canvas id="canvas" width="800" height="500" style="border:1px solid #000;width:800px;height:500px;float:left;"></canvas></div>
+    <div style="padding:20px">
         <label>Population Density per pixel<br/><input id="density" type="number" value="0.01"/></label><br/>
-        <label>Initial Infection Size<br/><input id="init_inf" type="number" value="3"/></label><br/>
+        <label>Initial Infection Size<br/><input id="init_inf" type="number" value="50"/></label><br/>
         <button id="restart">Restart</button><br/>
     </div>
     <label>Infection Radius<br/><input id="inf_r" type="number" value="5"/></label><br/>
     <label>Immunity Chance<br/><input id="immune_chance" type="number" value="0.01"/></label><br/>
     <label>Death Chance<br/><input id="death_chance" type="number" value="0.001"/></label><br/>
-    <label>Chance of Travel<br/><input id="chance_of_travel" type="number" value="0.00001"/></label><br/>
-    <label>Playback Pause<br/><input id="playback_ms" type="number" value="1000"/></label><br/>
+    <label>Chance of Travel<br/><input id="chance_of_travel" type="number" value="0.0001"/></label><br/>
+    <label>Playback Pause<br/><input id="playback_ms" type="number" value="50"/></label><br/>
     <div id="stats"></div>
     <script>
         var pop_density, sW, sH, pop_arr, init_inf;
-        var colours = ['#0f0', '#f00', '#fff', '#00f'];
+        var colours = ['yellow', 'red', '#79FE0C', '#D3D3D3'];
 
         function init() {
             pop_density = +$('#density').val();
@@ -29,6 +39,7 @@
             sH = +$('#canvas')[0].offsetHeight - 5;
             init_inf = +$('#init_inf').val();
             pop_arr = [];
+
             // { set up population
             var pop = pop_density * sW * sH;
             for (var i = 0; i < pop; ++i) {
@@ -144,10 +155,11 @@
                 ctx.fillRect(p.x, p.y, 4, 4);
             });
             $('#stats').html(
-                'uninfected: ' + popStats.uninfected +
-                '<br/>infected: ' + popStats.infected +
-                '<br/>immune: ' + popStats.immune +
-                '<br/>dead: ' + popStats.dead
+                '<span style="color:yellow">Uninfected: ' + popStats.uninfected +
+                '</span><span style="color:red"><br/>Infected: ' + popStats.infected +
+                '</span><span style="color:#79FE0C"><br/>Immune: ' + popStats.immune +
+                '</span><span style="color:#D3D3D3"><br/>Dead: ' + popStats.dead +
+                '</span>'
             );
             window.theRun = setTimeout(runMovements, +$('#playback_ms').val());
         }
